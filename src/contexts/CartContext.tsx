@@ -1,52 +1,39 @@
-import {
-  ReactNode,
-  useState,
-  createContext,
-  useEffect,
-  useContext,
-} from "react";
-
-export type Cart = {
-  id: number;
-  title: string;
-  price: number;
-  description: string;
-  category: string;
-  image: string;
-  rating: {
-    rate: number;
-    count: number;
-  };
-};
+import { ReactNode, createContext, useContext, useState } from "react";
+import { Item } from "../helper/types";
 
 type CartContextType = {
-  items: Cart[];
+  items: Item[];
+  addItemHandler: (addedItem: Item) => void;
 };
 
-type CartContextProviderProps = {
+const INITIAL_CONTEXT: CartContextType = {
+  items: [],
+  addItemHandler: () => {},
+};
+
+export const CartItemContext = createContext<CartContextType>(INITIAL_CONTEXT);
+
+type childrenProps = {
   children: ReactNode;
 };
 
-const INITIAL_CONTEXT = {
-  items: [],
-};
-
-const CartItemContext = createContext<CartContextType>(INITIAL_CONTEXT);
-
-export const CartContextProvider = ({ children }: CartContextProviderProps) => {
-  const [cartItemList, setCartItem] = useState<Cart[]>([]);
-
-  useEffect(() => {
-    const getCartItems = async () => {
-      const response = await fetch("https://fakestoreapi.com/products");
-      const data: Cart[] = await response.json();
-      setCartItem(data);
-    };
-    getCartItems();
-  }, []);
+export const CartContextProvider = ({ children }: childrenProps) => {
+  const [cartItemList, setCartItem] = useState<Item[]>([]);
+  const addItemHandler = (addedItem: Item) => {
+    const existingItemIndex = cartItemList.findIndex(
+      (item) => item.id === addedItem.id
+    );
+    if (existingItemIndex !== -1) {
+      const newCartItemList = [...cartItemList];
+      newCartItemList[existingItemIndex].quantity += 1;
+      newCartItemList[existingItemIndex].totalPrice += addedItem.price;
+    } else {
+      setCartItem((prevState) => [...prevState, addedItem]);
+    }
+  };
 
   return (
-    <CartItemContext.Provider value={{ items: cartItemList }}>
+    <CartItemContext.Provider value={{ items: cartItemList, addItemHandler }}>
       {children}
     </CartItemContext.Provider>
   );
