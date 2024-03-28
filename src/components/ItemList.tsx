@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useCartContext } from "../contexts/CartContext";
 import { getAllItems } from "../helper/APIHelper";
-import ItemCard from "./ItemCard";
 import { Item } from "../helper/types";
+import ItemCard from "./ItemCard";
 
 const ItemList = () => {
+  const { addItemHandler } = useCartContext();
   const [itemList, setItems] = useState<Item[]>([]);
 
   useEffect(() => {
@@ -21,20 +23,13 @@ const ItemList = () => {
     <div className="item-section">
       <h1>Item List</h1>
       <ul>
-        {itemList.map((item: Item) => {
-          return (
-            <ItemCard
-              key={item.id}
-              id={item.id}
-              title={item.title}
-              price={item.price}
-              description={item.description}
-              image={item.image}
-              quantity={item.quantity}
-              totalPrice={item.totalPrice}
-            />
-          );
-        })}
+        {itemList.map((item) => (
+          <ItemCard
+            key={item.id}
+            onAdd={() => addItemHandler(item)}
+            {...item}
+          />
+        ))}
       </ul>
     </div>
   );

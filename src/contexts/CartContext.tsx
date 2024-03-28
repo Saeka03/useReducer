@@ -3,7 +3,7 @@ import {
   Reducer,
   createContext,
   useContext,
-  useReducer,
+  useReducer
 } from "react";
 import { Item } from "../helper/types";
 
@@ -16,7 +16,7 @@ type CartContextType = {
 const INITIAL_CONTEXT: CartContextType = {
   items: [],
   addItemHandler: () => {},
-  deleteItemHandler: () => {},
+  deleteItemHandler: () => {}
 };
 
 export const CartItemContext = createContext<CartContextType>(INITIAL_CONTEXT);
@@ -36,38 +36,54 @@ type ItemReducer = Reducer<Item[], ItemAction>;
 
 const INITIAL_STATE: Item[] = [];
 
-export const CartContextProvider = ({ children }: childrenProps) => {
-  const cartItemReducer: ItemReducer = (prevState, action) => {
-    switch (action.type) {
-      case "add":
-        return [...prevState, action.addedItem];
+// is just function, does not have to be in the react component
+const cartItemReducer: ItemReducer = (prevState, action) => {
+  switch (action.type) {
+    case "add": {
+      // moving logic to state from
+      const existingItemIndex = prevState.findIndex(
+        (item) => item.id === action.addedItem.id
+      );
 
-      case "delete":
-        return prevState.filter((item) => item.id !== action.itemId);
-      default:
-        break;
+      if (existingItemIndex !== -1) {
+        // if the item is already existing
+        // then you need to update the existing instead
+        const newCartItemList = [...prevState];
+        newCartItemList[existingItemIndex].quantity += 1;
+        newCartItemList[existingItemIndex].totalPrice += action.addedItem.price;
+
+        return newCartItemList;
+      } else {
+        // otherwise just append new one
+        return [
+          ...prevState,
+          {
+            ...action.addedItem,
+            totalPrice: action.addedItem.price,
+            quantity: 1
+          }
+        ];
+      }
     }
-    return prevState;
-  };
+    case "delete":
+      return prevState.filter((item) => item.id !== action.itemId);
+    default:
+      throw new Error("invalid type");
+  }
+};
 
+export const CartContextProvider = ({ children }: childrenProps) => {
   const [cartItemList2, dispatch] = useReducer<ItemReducer>(
     cartItemReducer,
     INITIAL_STATE
   );
 
   const addItemHandler = (addedItem: Item) => {
-    const existingItemIndex = cartItemList2.findIndex(
-      (item) => item.id === addedItem.id
-    );
-    if (existingItemIndex !== -1) {
-      const newCartItemList = [...cartItemList2];
-      newCartItemList[existingItemIndex].quantity += 1;
-      newCartItemList[existingItemIndex].totalPrice += addedItem.price;
-    } else {
-      dispatch({ type: "add", addedItem });
-    }
+    dispatch({ type: "add", addedItem });
   };
 
+  // delete event should the same as add event
+  // I will let you try
   const deleteItemHandler = (
     itemId: number,
     price: number,
