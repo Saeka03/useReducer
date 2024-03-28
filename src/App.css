@@ -25,6 +25,18 @@ img {
 
 li {
   list-style-type: none;
+  margin: 20px;
+  padding: 30px;
+  border: 1px solid white;
+  border-radius: 15px;
+}
+
+ul {
+  padding-inline-start: 0;
+}
+
+p {
+  text-align: left;
 }
 
 @keyframes logo-spin {
