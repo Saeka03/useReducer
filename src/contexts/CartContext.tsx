@@ -10,7 +10,7 @@ import { Item } from "../helper/types";
 type CartContextType = {
   items: Item[];
   addItemHandler: (addedItem: Item) => void;
-  deleteItemHandler: (itemId: number, quantity: number, price: number) => void;
+  deleteItemHandler: (deletedItem: Item) => void;
 };
 
 const INITIAL_CONTEXT: CartContextType = {
@@ -30,61 +30,76 @@ type ItemAction =
       type: "add";
       addedItem: Item;
     }
-  | { type: "delete"; itemId: number; quantity: number; price: number };
+  | { type: "delete"; deletedItem: Item };
 
 type ItemReducer = Reducer<Item[], ItemAction>;
 
 const INITIAL_STATE: Item[] = [];
 
-export const CartContextProvider = ({ children }: childrenProps) => {
-  const cartItemReducer: ItemReducer = (prevState, action) => {
-    switch (action.type) {
-      case "add":
-        return [...prevState, action.addedItem];
-
-      case "delete":
-        return prevState.filter((item) => item.id !== action.itemId);
-      default:
-        break;
+const cartItemReducer: ItemReducer = (prevState, action) => {
+  switch (action.type) {
+    case "add": {
+      const existingItemIndex = prevState.findIndex(
+        (item) => item.id === action.addedItem.id
+      );
+      if (existingItemIndex !== -1) {
+        const newCartItemList = [...prevState];
+        newCartItemList[existingItemIndex].quantity += 1;
+        newCartItemList[existingItemIndex].totalPrice = parseFloat(
+          (
+            newCartItemList[existingItemIndex].totalPrice +
+            action.addedItem.price
+          ).toFixed(2)
+        );
+        return newCartItemList;
+      } else {
+        return [
+          ...prevState,
+          {
+            ...action.addedItem,
+            totalPrice: action.addedItem.price,
+            quantity: 1,
+          },
+        ];
+      }
     }
-    return prevState;
-  };
 
+    case "delete": {
+      if (action.deletedItem.quantity > 1) {
+        const existingItemIndex = prevState.findIndex(
+          (item) => item.id === action.deletedItem.id
+        );
+        if (existingItemIndex !== -1) {
+          const newCartItemList = [...prevState];
+          newCartItemList[existingItemIndex].quantity -= 1;
+          newCartItemList[existingItemIndex].totalPrice = parseFloat(
+            (
+              newCartItemList[existingItemIndex].totalPrice -
+              action.deletedItem.price
+            ).toFixed(2)
+          );
+          return newCartItemList;
+        }
+      }
+      return prevState.filter((item) => item.id !== action.deletedItem.id);
+    }
+    default:
+      throw new Error("invalid type");
+  }
+};
+
+export const CartContextProvider = ({ children }: childrenProps) => {
   const [cartItemList2, dispatch] = useReducer<ItemReducer>(
     cartItemReducer,
     INITIAL_STATE
   );
 
   const addItemHandler = (addedItem: Item) => {
-    const existingItemIndex = cartItemList2.findIndex(
-      (item) => item.id === addedItem.id
-    );
-    if (existingItemIndex !== -1) {
-      const newCartItemList = [...cartItemList2];
-      newCartItemList[existingItemIndex].quantity += 1;
-      newCartItemList[existingItemIndex].totalPrice += addedItem.price;
-    } else {
-      dispatch({ type: "add", addedItem });
-    }
+    dispatch({ type: "add", addedItem });
   };
 
-  const deleteItemHandler = (
-    itemId: number,
-    price: number,
-    quantity: number
-  ) => {
-    if (quantity > 1) {
-      const existingItemIndex = cartItemList2.findIndex(
-        (item) => item.id === itemId
-      );
-      if (existingItemIndex !== -1) {
-        const newCartItemList = [...cartItemList2];
-        newCartItemList[existingItemIndex].quantity -= 1;
-        newCartItemList[existingItemIndex].totalPrice -= price;
-      }
-    } else {
-      dispatch({ type: "delete", itemId, quantity, price });
-    }
+  const deleteItemHandler = (deletedItem: Item) => {
+    dispatch({ type: "delete", deletedItem });
   };
 
   return (

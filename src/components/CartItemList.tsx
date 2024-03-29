@@ -3,7 +3,7 @@ import { Item } from "../helper/types";
 import CartItem from "./CartItem";
 
 const CartItemList = () => {
-  const { items } = useCartContext();
+  const { items, deleteItemHandler } = useCartContext();
 
   return (
     <div className="cart-items">
@@ -13,13 +13,8 @@ const CartItemList = () => {
           return (
             <CartItem
               key={item.id}
-              id={item.id}
-              image={item.image}
-              title={item.title}
-              quantity={item.quantity}
-              totalPrice={item.totalPrice}
-              price={item.price}
-              description={item.description}
+              onDelete={() => deleteItemHandler(item)}
+              {...item}
             />
           );
         })}

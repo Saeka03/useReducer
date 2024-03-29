@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { getAllItems } from "../helper/APIHelper";
 import ItemCard from "./ItemCard";
 import { Item } from "../helper/types";
+import { useCartContext } from "../contexts/CartContext";
 
 const ItemList = () => {
+  const { addItemHandler } = useCartContext();
   const [itemList, setItems] = useState<Item[]>([]);
 
   useEffect(() => {
@@ -25,13 +27,8 @@ const ItemList = () => {
           return (
             <ItemCard
               key={item.id}
-              id={item.id}
-              title={item.title}
-              price={item.price}
-              description={item.description}
-              image={item.image}
-              quantity={item.quantity}
-              totalPrice={item.totalPrice}
+              onAdd={() => addItemHandler(item)}
+              {...item}
             />
           );
         })}

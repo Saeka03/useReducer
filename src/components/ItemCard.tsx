@@ -1,28 +1,23 @@
-import { useCartContext } from "../contexts/CartContext";
 import { Item } from "../helper/types";
 
-const ItemCard = ({ id, title, price, description, image }: Item) => {
-  const { addItemHandler } = useCartContext();
+type ItemCardProps = Partial<Item> & {
+  onAdd: () => void;
+};
 
-  const addHandler = () => {
-    addItemHandler({
-      id: id,
-      title: title,
-      price: price,
-      description: description,
-      image: image,
-      quantity: 1,
-      totalPrice: price,
-    });
-  };
-
+const ItemCard = ({
+  title,
+  price,
+  description,
+  image,
+  onAdd,
+}: ItemCardProps) => {
   return (
-    <li key={id}>
+    <li>
       <img src={image} alt={title} />
       <h3>{title}</h3>
       <h4>${price}</h4>
       <p>{description}</p>
-      <button onClick={addHandler}>Add</button>
+      <button onClick={onAdd}>Add</button>
     </li>
   );
 };
