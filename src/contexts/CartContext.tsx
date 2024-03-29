@@ -1,52 +1,111 @@
 import {
   ReactNode,
-  useState,
+  Reducer,
   createContext,
-  useEffect,
   useContext,
+  useReducer,
 } from "react";
-
-export type Cart = {
-  id: number;
-  title: string;
-  price: number;
-  description: string;
-  category: string;
-  image: string;
-  rating: {
-    rate: number;
-    count: number;
-  };
-};
+import { Item } from "../helper/types";
 
 type CartContextType = {
-  items: Cart[];
+  items: Item[];
+  addItemHandler: (addedItem: Item) => void;
+  deleteItemHandler: (deletedItem: Item) => void;
 };
 
-type CartContextProviderProps = {
+const INITIAL_CONTEXT: CartContextType = {
+  items: [],
+  addItemHandler: () => {},
+  deleteItemHandler: () => {},
+};
+
+export const CartItemContext = createContext<CartContextType>(INITIAL_CONTEXT);
+
+type childrenProps = {
   children: ReactNode;
 };
 
-const INITIAL_CONTEXT = {
-  items: [],
+type ItemAction =
+  | {
+      type: "add";
+      addedItem: Item;
+    }
+  | { type: "delete"; deletedItem: Item };
+
+type ItemReducer = Reducer<Item[], ItemAction>;
+
+const INITIAL_STATE: Item[] = [];
+
+const cartItemReducer: ItemReducer = (prevState, action) => {
+  switch (action.type) {
+    case "add": {
+      const existingItemIndex = prevState.findIndex(
+        (item) => item.id === action.addedItem.id
+      );
+      if (existingItemIndex !== -1) {
+        const newCartItemList = [...prevState];
+        newCartItemList[existingItemIndex].quantity += 1;
+        newCartItemList[existingItemIndex].totalPrice = parseFloat(
+          (
+            newCartItemList[existingItemIndex].totalPrice +
+            action.addedItem.price
+          ).toFixed(2)
+        );
+        return newCartItemList;
+      } else {
+        return [
+          ...prevState,
+          {
+            ...action.addedItem,
+            totalPrice: action.addedItem.price,
+            quantity: 1,
+          },
+        ];
+      }
+    }
+
+    case "delete": {
+      if (action.deletedItem.quantity > 1) {
+        const existingItemIndex = prevState.findIndex(
+          (item) => item.id === action.deletedItem.id
+        );
+        if (existingItemIndex !== -1) {
+          const newCartItemList = [...prevState];
+          newCartItemList[existingItemIndex].quantity -= 1;
+          newCartItemList[existingItemIndex].totalPrice = parseFloat(
+            (
+              newCartItemList[existingItemIndex].totalPrice -
+              action.deletedItem.price
+            ).toFixed(2)
+          );
+          return newCartItemList;
+        }
+      }
+      return prevState.filter((item) => item.id !== action.deletedItem.id);
+    }
+    default:
+      throw new Error("invalid type");
+  }
 };
 
-const CartItemContext = createContext<CartContextType>(INITIAL_CONTEXT);
+export const CartContextProvider = ({ children }: childrenProps) => {
+  const [cartItemList2, dispatch] = useReducer<ItemReducer>(
+    cartItemReducer,
+    INITIAL_STATE
+  );
 
-export const CartContextProvider = ({ children }: CartContextProviderProps) => {
-  const [cartItemList, setCartItem] = useState<Cart[]>([]);
+  const addItemHandler = (addedItem: Item) => {
+    dispatch({ type: "add", addedItem });
+  };
 
-  useEffect(() => {
-    const getCartItems = async () => {
-      const response = await fetch("https://fakestoreapi.com/products");
-      const data: Cart[] = await response.json();
-      setCartItem(data);
-    };
-    getCartItems();
-  }, []);
+  const deleteItemHandler = (deletedItem: Item) => {
+    dispatch({ type: "delete", deletedItem });
+  };
 
   return (
-    <CartItemContext.Provider value={{ items: cartItemList }}>
+    <CartItemContext.Provider
+      value={{ items: cartItemList2, addItemHandler, deleteItemHandler }}
+    >
       {children}
     </CartItemContext.Provider>
   );

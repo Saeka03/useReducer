@@ -1,21 +1,40 @@
-import { Cart, useCartContext } from "../contexts/CartContext";
+import { useEffect, useState } from "react";
+import { getProducts } from "../helper/APIHelper";
+import ItemCard from "./ItemCard";
+import { Item } from "../helper/types";
+import { useCartContext } from "../contexts/CartContext";
 
-export const ItemList = () => {
-  const { items: cartItemList } = useCartContext();
+const ItemList = () => {
+  const { addItemHandler } = useCartContext();
+  const [itemList, setItems] = useState<Item[]>([]);
+
+  useEffect(() => {
+    const getData = async () => {
+      const allItems = await getProducts();
+      if (!allItems) {
+        throw new Error("Failed to get the items");
+      }
+      setItems(allItems);
+    };
+    getData();
+  }, []);
 
   return (
-    <div className="item-list">
+    <div className="item-section">
+      <h1>Item List</h1>
       <ul>
-        {cartItemList.map(({ id, title, price, description, image }: Cart) => (
-          <li key={id}>
-            <img src={image} alt={title} />
-            <p>{title}</p>
-            <p>${price}</p>
-            <p>{description}</p>
-            <button>Add</button>
-          </li>
-        ))}
+        {itemList.map((item) => {
+          return (
+            <ItemCard
+              key={item.id}
+              onAdd={() => addItemHandler(item)}
+              {...item}
+            />
+          );
+        })}
       </ul>
     </div>
   );
 };
+
+export default ItemList;

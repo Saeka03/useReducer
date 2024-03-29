@@ -1,8 +1,14 @@
 import "./App.css";
-import { ItemList } from "./components/ItemList";
+import CartItemList from "./components/CartItemList";
+import ItemList from "./components/ItemList";
 
 function App() {
-  return <ItemList />;
+  return (
+    <>
+      <CartItemList />
+      <ItemList />
+    </>
+  );
 }
 
 export default App;

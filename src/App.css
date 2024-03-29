@@ -25,6 +25,29 @@ img {
 
 li {
   list-style-type: none;
+  margin: 20px;
+  padding: 30px;
+  border: 1px solid white;
+  border-radius: 15px;
+}
+
+ul {
+  padding-inline-start: 0;
+}
+
+p {
+  text-align: left;
+}
+
+.item-section {
+  border-radius: 10px;
+  border: 2px solid rgb(93, 196, 93);
+}
+
+.cart-items {
+  border-radius: 10px;
+  border: 2px solid rgb(135, 204, 213);
+  margin-bottom: 20px;
 }
 
 @keyframes logo-spin {
