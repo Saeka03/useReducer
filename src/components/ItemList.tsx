@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAllItems } from "../helper/APIHelper";
+import { getProducts } from "../helper/APIHelper";
 import ItemCard from "./ItemCard";
 import { Item } from "../helper/types";
 import { useCartContext } from "../contexts/CartContext";
@@ -10,7 +10,7 @@ const ItemList = () => {
 
   useEffect(() => {
     const getData = async () => {
-      const allItems = await getAllItems();
+      const allItems = await getProducts();
       if (!allItems) {
         throw new Error("Failed to get the items");
       }
@@ -23,7 +23,7 @@ const ItemList = () => {
     <div className="item-section">
       <h1>Item List</h1>
       <ul>
-        {itemList.map((item: Item) => {
+        {itemList.map((item) => {
           return (
             <ItemCard
               key={item.id}

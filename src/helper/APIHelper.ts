@@ -1,6 +1,6 @@
 const API_URL: string = "https://fakestoreapi.com/products";
 
-export const getAllItems = async () => {
+export const getProducts = async () => {
   const response = await fetch(`${API_URL}`);
   if (!response.ok) {
     const error = {

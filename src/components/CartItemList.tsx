@@ -1,5 +1,4 @@
 import { useCartContext } from "../contexts/CartContext";
-import { Item } from "../helper/types";
 import CartItem from "./CartItem";
 
 const CartItemList = () => {
@@ -9,7 +8,7 @@ const CartItemList = () => {
     <div className="cart-items">
       <h1>My Cart</h1>
       <ul>
-        {items.map((item: Item) => {
+        {items.map((item) => {
           return (
             <CartItem
               key={item.id}
